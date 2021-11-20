@@ -13,7 +13,7 @@ type UserCore struct {
 }
 
 type IBusiness interface {
-	FindUserById(username string) (UserCore, error)
+	FindUserById(id uint) (UserCore, error)
 }
 
 type IData interface {
