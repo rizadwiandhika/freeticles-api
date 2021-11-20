@@ -13,9 +13,21 @@ type UserCore struct {
 }
 
 type IBusiness interface {
+	FindUsers() ([]UserCore, error)
 	FindUserById(id uint) (UserCore, error)
+	FindUserByUsername(username string) (UserCore, error)
+	FindUserByEmail(email string) (UserCore, error)
+	CreateUser(user UserCore) (UserCore, error)
+	EditUser(user UserCore) (UserCore, error)
+	RemoveUser(username string) error
 }
 
 type IData interface {
+	SelectUsers() ([]UserCore, error)
 	SelectUserById(id uint) (UserCore, error)
+	SelectUserByUsername(username string) (UserCore, error)
+	SelectUserByEmail(email string) (UserCore, error)
+	InsertUser(user UserCore) (UserCore, error)
+	UpdateUser(user UserCore) (UserCore, error)
+	DeleteUser(username string) error
 }
