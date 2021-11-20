@@ -7,11 +7,11 @@ import (
 )
 
 type User struct {
-	ID        uint
-	Username  string
-	Email     string
-	Name      string
-	Password  string
+	ID        uint   `gorm:"primariKey"`
+	Username  string `gorm:"size:64;unique;not null"`
+	Email     string `gorm:"size:64;unique;not null"`
+	Name      string `gorm:"size:64;not null"`
+	Password  string `gorm:"size:512;not null"`
 	UpdatedAt time.Time
 	CreatedAt time.Time
 }
