@@ -6,7 +6,7 @@ type userBusiness struct {
 	userData users.IData
 }
 
-func NewUserBusiness(data users.IData) *userBusiness {
+func NewBusiness(data users.IData) *userBusiness {
 	return &userBusiness{
 		userData: data,
 	}
