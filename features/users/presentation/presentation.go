@@ -19,10 +19,10 @@ func NewPresentation(articleBusiness users.IBusiness) *UserPresentation {
 	return &UserPresentation{articleBusiness}
 }
 func (up *UserPresentation) GetDetailUser(c echo.Context) error {
-	var id uint
-	echo.PathParamsBinder(c).Uint("id", &id)
+	var username string
+	echo.PathParamsBinder(c).String("id", &username)
 
-	user, err := up.userBusiness.FindUserById(id)
+	user, err := up.userBusiness.FindUserByUsername(username)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, json{
 			"message": "Could not get user",
