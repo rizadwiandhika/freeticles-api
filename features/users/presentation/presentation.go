@@ -18,11 +18,11 @@ type UserPresentation struct {
 func NewPresentation(articleBusiness users.IBusiness) *UserPresentation {
 	return &UserPresentation{articleBusiness}
 }
-func (ap UserPresentation) GetDetailUser(c echo.Context) error {
+func (up *UserPresentation) GetDetailUser(c echo.Context) error {
 	var id uint
 	echo.PathParamsBinder(c).Uint("id", &id)
 
-	user, err := ap.userBusiness.FindUserById(id)
+	user, err := up.userBusiness.FindUserById(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, json{
 			"message": "Could not get user",
