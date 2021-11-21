@@ -28,12 +28,19 @@ func AutoMigrate() {
 		panic(err)
 	}
 
-	usr := user.User{
+	usr1 := user.User{
 		Username: "riza.dwii",
 		Email:    "rizadwiandhika@mail.com",
 		Password: string(hashedPassword),
 		Name:     "Riza Dwi Andhika",
 	}
+	usr2 := user.User{
+		Username: "hernowoari",
+		Email:    "owo@mail.com",
+		Password: string(hashedPassword),
+		Name:     "Hernowo Ari Sutanto",
+	}
+
 	tags := []article.Tag{
 		{ArticleID: 1, Tag: "anime"},
 		{ArticleID: 1, Tag: "sport"},
@@ -46,7 +53,11 @@ func AutoMigrate() {
 		Tags:     tags,
 	}
 
-	err = config.DB.Create(&usr).Error
+	err = config.DB.Create(&usr1).Error
+	if err != nil {
+		panic(err)
+	}
+	err = config.DB.Create(&usr2).Error
 	if err != nil {
 		panic(err)
 	}

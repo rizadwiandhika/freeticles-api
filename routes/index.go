@@ -13,6 +13,7 @@ func Setup() *echo.Echo {
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	SetupArticleRoutes(e, presenter)
+	SetupUserRoutes(e, presenter)
 
 	return e
 }

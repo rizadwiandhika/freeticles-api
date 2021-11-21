@@ -7,10 +7,12 @@ import (
 	articlesPresentation "github.com/rizadwiandhika/miniproject-backend-alterra/features/articles/presentation"
 	usersBusiness "github.com/rizadwiandhika/miniproject-backend-alterra/features/users/business"
 	usersData "github.com/rizadwiandhika/miniproject-backend-alterra/features/users/data"
+	usersPresentation "github.com/rizadwiandhika/miniproject-backend-alterra/features/users/presentation"
 )
 
 type Presenter struct {
 	ArticlePresentation *articlesPresentation.ArticlePresentation
+	UserPresentation    *usersPresentation.UserPresentation
 }
 
 func New() *Presenter {
@@ -20,9 +22,11 @@ func New() *Presenter {
 	userBusiness := usersBusiness.NewBusiness(userData)
 	articleBusiness := articlesBusiness.NewBusiness(articleData, userBusiness)
 
+	userPresentation := usersPresentation.NewPresentation(userBusiness)
 	articlePresentation := articlesPresentation.NewPresentation(articleBusiness)
 
 	return &Presenter{
 		ArticlePresentation: articlePresentation,
+		UserPresentation:    userPresentation,
 	}
 }
