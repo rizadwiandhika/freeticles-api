@@ -89,10 +89,7 @@ func (ur *userRepository) UpdateUser(user users.UserCore) (users.UserCore, error
 		return users.UserCore{}, err
 	}
 
-	userCore := toUserCore(&updatedUser)
-	userCore.Password = user.Password // Give back user the raw password. Not the hashed one.
-
-	return userCore, nil
+	return toUserCore(&updatedUser), nil
 }
 
 func (ur *userRepository) DeleteUser(username string) error {
