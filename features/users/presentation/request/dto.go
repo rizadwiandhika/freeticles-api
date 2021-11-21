@@ -1,6 +1,8 @@
 package request
 
-import "github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
+import (
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
+)
 
 type User struct {
 	Username string `param:"username"`
