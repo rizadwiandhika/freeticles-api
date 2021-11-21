@@ -5,6 +5,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users/presentation/request"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users/presentation/response"
 )
 
 type any interface{}
@@ -18,17 +20,80 @@ type UserPresentation struct {
 func NewPresentation(articleBusiness users.IBusiness) *UserPresentation {
 	return &UserPresentation{articleBusiness}
 }
-func (up *UserPresentation) GetDetailUser(c echo.Context) error {
-	var username string
-	echo.PathParamsBinder(c).String("id", &username)
 
-	user, err := up.userBusiness.FindUserByUsername(username)
+func (up *UserPresentation) GetUsers(c echo.Context) error {
+	users, err := up.userBusiness.FindUsers()
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, json{
-			"message": "Could not get user",
+			"message": "Could not get users",
 			"error":   err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, json{"user": user})
+	return c.JSON(http.StatusOK, json{
+		"users": response.FromSliceUserCore(users),
+	})
+}
+
+func (up *UserPresentation) GetDetailUser(c echo.Context) error {
+	var username string
+	echo.PathParamsBinder(c).String("username", &username)
+
+	user, err := up.userBusiness.FindUserByUsername(username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, json{
+			"username": username,
+			"message":  "Failed retrieving user",
+			"error":    err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, json{
+		"message": "Success retrieving user",
+		"user":    response.FromUserCore(&user),
+	})
+}
+
+func (up *UserPresentation) PutEditUser(c echo.Context) error {
+	var user request.User
+	err := c.Bind(&user)
+	if err != nil {
+		core := request.ToUserCore(user)
+		return c.JSON(http.StatusInternalServerError, json{
+			"message": "Failed updating user",
+			"error":   err.Error(),
+			"user":    response.FromUserCore(&core),
+		})
+	}
+
+	userCore := request.ToUserCore(user)
+	editedUser, err := up.userBusiness.EditUser(userCore)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, json{
+			"message": "Failed updating user",
+			"error":   err.Error(),
+			"user":    response.FromUserCore(&userCore),
+		})
+	}
+
+	return c.JSON(http.StatusOK, json{
+		"message":     "Success updating user",
+		"updatedUser": response.FromUserCore(&editedUser),
+	})
+}
+
+func (up *UserPresentation) DeleteUser(c echo.Context) error {
+	var username string
+	echo.PathParamsBinder(c).String("username", &username)
+
+	err := up.userBusiness.RemoveUser(username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, json{
+			"message": "Failed deleting user",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, json{"message": "Delete user success"})
 }
