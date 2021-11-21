@@ -22,6 +22,7 @@ func toUserCore(u *User) users.UserCore {
 		Username:  u.Username,
 		Email:     u.Email,
 		Name:      u.Name,
+		Password:  u.Password,
 		UpdatedAt: u.UpdatedAt,
 		CreatedAt: u.CreatedAt,
 	}

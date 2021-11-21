@@ -37,12 +37,16 @@ func (ub *userBusiness) CreateUser(user users.UserCore) (users.UserCore, error) 
 	const COST = 14
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), COST)
 	if err != nil {
-		e := errors.New("Failed to hash password")
-		return users.UserCore{}, e
+		return users.UserCore{}, err
 	}
 
 	user.Password = string(hashedPassword)
-	return ub.userData.InsertUser(user)
+	newUser, err := ub.userData.InsertUser(user)
+	if err != nil {
+		return users.UserCore{}, err
+	}
+
+	return newUser, nil
 }
 
 func (ub *userBusiness) EditUser(user users.UserCore) (users.UserCore, error) {
