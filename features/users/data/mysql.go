@@ -2,7 +2,6 @@ package data
 
 import (
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -59,48 +58,33 @@ func (ur *userRepository) SelectUserByEmail(email string) (users.UserCore, error
 }
 
 func (ur *userRepository) InsertUser(user users.UserCore) (users.UserCore, error) {
-	const COST = 14
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), COST)
-	if err != nil {
-		return users.UserCore{}, err
-	}
-
 	newUser := User{
 		Username: user.Username,
 		Email:    user.Email,
 		Name:     user.Name,
-		Password: string(hashedPassword),
+		Password: user.Password,
 	}
 
-	err = ur.db.Create(&newUser).Error
+	err := ur.db.Create(&newUser).Error
 	if err != nil {
 		return users.UserCore{}, err
 	}
 
-	userCore := toUserCore(&newUser)
-	userCore.Password = user.Password // Give back user the raw password. Not the hashed one.
-
-	return userCore, nil
+	return toUserCore(&newUser), nil
 }
 
 func (ur *userRepository) UpdateUser(user users.UserCore) (users.UserCore, error) {
-	const COST = 14
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), COST)
-	if err != nil {
-		return users.UserCore{}, err
-	}
-
 	updatedUser := User{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-		Name:     user.Name,
-		Password: string(hashedPassword),
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		Name:      user.Name,
+		Password:  user.Password,
+		UpdatedAt: user.UpdatedAt,
+		CreatedAt: user.CreatedAt,
 	}
 
-	err = ur.db.Save(&updatedUser).Error
+	err := ur.db.Save(&updatedUser).Error
 	if err != nil {
 		return users.UserCore{}, err
 	}
