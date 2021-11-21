@@ -14,6 +14,7 @@ func Setup() *echo.Echo {
 
 	SetupArticleRoutes(e, presenter)
 	SetupUserRoutes(e, presenter)
+	SetupAuthRoutes(e, presenter)
 
 	return e
 }
