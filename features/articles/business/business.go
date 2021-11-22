@@ -41,7 +41,7 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	return articleData, nil, http.StatusOK
 }
 
-func (ab *articleBusiness) RemoveArticleById(id int) (articles.ArticleCore, error, int) {
+func (ab *articleBusiness) RemoveArticleById(id uint) (articles.ArticleCore, error, int) {
 	return articles.ArticleCore{}, nil, http.StatusOK
 }
 
