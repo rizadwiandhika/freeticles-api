@@ -20,12 +20,23 @@ func NewBusiness(data articles.IData, userBusiness users.IBusiness) *articleBusi
 }
 
 func (ab *articleBusiness) FindArticles(params articles.QueryParams) ([]articles.ArticleCore, error, int) {
-	articles, err := ab.articleData.SelectArticles(params)
+	articlesData, err := ab.articleData.SelectArticles(params)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 
-	return articles, nil, http.StatusOK
+	for i := range articlesData {
+		userData, err := ab.userBusiness.FindUserById(articlesData[i].AuthorID)
+		if err != nil {
+			return nil, err, http.StatusInternalServerError
+		}
+
+		articlesData[i].Author.Username = userData.Username
+		articlesData[i].Author.Email = userData.Email
+		articlesData[i].Author.Name = userData.Name
+	}
+
+	return articlesData, nil, http.StatusOK
 }
 
 func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error, int) {
