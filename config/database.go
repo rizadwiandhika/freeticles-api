@@ -2,9 +2,13 @@ package config
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -16,7 +20,15 @@ func ConnectDB() {
 		ENV.DB_PASSWORD,
 		ENV.DB_NAME,
 	)
-	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	loggerWriter := log.New(os.Stdout, "\r\n", log.LstdFlags)
+	loggerConfig := logger.Config{
+		SlowThreshold: time.Second,
+		LogLevel:      logger.Silent,
+		Colorful:      true,
+	}
+
+	connection, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: logger.New(loggerWriter, loggerConfig)})
 	if err != nil {
 		panic(err)
 	}
