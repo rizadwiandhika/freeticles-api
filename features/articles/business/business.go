@@ -1,7 +1,7 @@
 package business
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
@@ -19,22 +19,20 @@ func NewBusiness(data articles.IData, userBusiness users.IBusiness) *articleBusi
 	}
 }
 
-func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error) {
+func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error, int) {
 	articleData, err := ab.articleData.SelectArticleById(id)
 	if err != nil {
-		return articles.ArticleCore{}, err
+		return articles.ArticleCore{}, err, http.StatusInternalServerError
 	}
-
-	fmt.Printf("%+v\n", articleData)
 
 	userData, err := ab.userBusiness.FindUserById(articleData.AuthorID)
 	if err != nil {
-		return articles.ArticleCore{}, err
+		return articles.ArticleCore{}, err, http.StatusInternalServerError
 	}
 
 	articleData.Author.Username = userData.Username
 	articleData.Author.Email = userData.Email
 	articleData.Author.Name = userData.Name
 
-	return articleData, nil
+	return articleData, nil, http.StatusOK
 }
