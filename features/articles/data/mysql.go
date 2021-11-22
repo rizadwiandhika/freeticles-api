@@ -32,14 +32,14 @@ func (ar *articleRepository) SelectArticleByKeyword(keyword string) ([]articles.
 	return nil, nil
 }
 
-func (ar *articleRepository) DeleteArticleById(id int) (articles.ArticleCore, error) {
-	return articles.ArticleCore{}, nil
+func (ar *articleRepository) DeleteArticleById(id uint) error {
+	return nil
 }
 
 func (ar *articleRepository) InsertArticle(article articles.ArticleCore) (articles.ArticleCore, error) {
 	return articles.ArticleCore{}, nil
 }
 
-func (ar *articleRepository) UpdateArticle(article articles.ArticleCore) error {
-	return nil
+func (ar *articleRepository) UpdateArticle(article articles.ArticleCore) (articles.ArticleCore, error) {
+	return articles.ArticleCore{}, nil
 }

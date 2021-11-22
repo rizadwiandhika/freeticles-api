@@ -46,7 +46,7 @@ type QueryParams struct {
 type IBusiness interface {
 	FindArticles(params QueryParams) ([]ArticleCore, error, int)
 	FindArticleById(id uint) (ArticleCore, error, int)
-	RemoveArticleById(id int) (ArticleCore, error, int)
+	RemoveArticleById(id uint) (error, int)
 	CreateArticle(article ArticleCore) (ArticleCore, error, int)
 	EditArticle(article ArticleCore) (ArticleCore, error, int)
 }
@@ -55,7 +55,7 @@ type IBusiness interface {
 type IData interface {
 	SelectArticles(params QueryParams) ([]ArticleCore, error)
 	SelectArticleById(id uint) (ArticleCore, error)
-	DeleteArticleById(id int) (ArticleCore, error)
+	DeleteArticleById(id uint) error
 	InsertArticle(article ArticleCore) (ArticleCore, error)
-	UpdateArticle(article ArticleCore) error
+	UpdateArticle(article ArticleCore) (ArticleCore, error)
 }

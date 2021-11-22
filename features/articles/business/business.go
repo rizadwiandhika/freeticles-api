@@ -20,7 +20,12 @@ func NewBusiness(data articles.IData, userBusiness users.IBusiness) *articleBusi
 }
 
 func (ab *articleBusiness) FindArticles(params articles.QueryParams) ([]articles.ArticleCore, error, int) {
-	return nil, nil, http.StatusOK
+	articles, err := ab.articleData.SelectArticles(params)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+
+	return articles, nil, http.StatusOK
 }
 
 func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error, int) {
@@ -41,14 +46,29 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	return articleData, nil, http.StatusOK
 }
 
-func (ab *articleBusiness) RemoveArticleById(id int) (articles.ArticleCore, error, int) {
-	return articles.ArticleCore{}, nil, http.StatusOK
+func (ab *articleBusiness) RemoveArticleById(id uint) (error, int) {
+	err := ab.articleData.DeleteArticleById(id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
+	return nil, http.StatusAccepted
 }
 
 func (ab *articleBusiness) CreateArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
-	return articles.ArticleCore{}, nil, http.StatusOK
+	createdArticle, err := ab.articleData.InsertArticle(article)
+	if err != nil {
+		return article, err, http.StatusInternalServerError
+	}
+
+	return createdArticle, nil, http.StatusOK
 }
 
 func (ab *articleBusiness) EditArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
-	return articles.ArticleCore{}, nil, http.StatusOK
+	editedArticle, err := ab.articleData.UpdateArticle(article)
+	if err != nil {
+		return article, err, http.StatusInternalServerError
+	}
+
+	return editedArticle, nil, http.StatusOK
 }
