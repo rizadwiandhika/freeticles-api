@@ -19,6 +19,10 @@ func NewBusiness(data articles.IData, userBusiness users.IBusiness) *articleBusi
 	}
 }
 
+func (ab *articleBusiness) FindArticles(params articles.QueryParams) ([]articles.ArticleCore, error, int) {
+	return nil, nil, http.StatusOK
+}
+
 func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error, int) {
 	articleData, err := ab.articleData.SelectArticleById(id)
 	if err != nil {
@@ -35,4 +39,16 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	articleData.Author.Name = userData.Name
 
 	return articleData, nil, http.StatusOK
+}
+
+func (ab *articleBusiness) RemoveArticleById(id int) (articles.ArticleCore, error, int) {
+	return articles.ArticleCore{}, nil, http.StatusOK
+}
+
+func (ab *articleBusiness) CreateArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
+	return articles.ArticleCore{}, nil, http.StatusOK
+}
+
+func (ab *articleBusiness) EditArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
+	return articles.ArticleCore{}, nil, http.StatusOK
 }
