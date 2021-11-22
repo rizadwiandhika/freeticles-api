@@ -56,7 +56,12 @@ func (ab *articleBusiness) RemoveArticleById(id uint) (articles.ArticleCore, err
 }
 
 func (ab *articleBusiness) CreateArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
-	return articles.ArticleCore{}, nil, http.StatusOK
+	createdArticle, err := ab.articleData.InsertArticle(article)
+	if err != nil {
+		return article, err, http.StatusInternalServerError
+	}
+
+	return createdArticle, nil, http.StatusOK
 }
 
 func (ab *articleBusiness) EditArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
