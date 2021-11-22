@@ -23,9 +23,9 @@ func (ap ArticlePresentation) GetDetailArticle(c echo.Context) error {
 	var id uint
 	echo.PathParamsBinder(c).Uint("id", &id)
 
-	articles, err := ap.articleBusiness.FindArticleById(id)
+	articles, err, status := ap.articleBusiness.FindArticleById(id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, json{
+		return c.JSON(status, json{
 			"message": "Could not get article",
 			"error":   err.Error(),
 		})
