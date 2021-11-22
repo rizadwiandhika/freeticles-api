@@ -46,13 +46,13 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	return articleData, nil, http.StatusOK
 }
 
-func (ab *articleBusiness) RemoveArticleById(id uint) (articles.ArticleCore, error, int) {
-	deletedArticle, err := ab.articleData.DeleteArticleById(id)
+func (ab *articleBusiness) RemoveArticleById(id uint) (error, int) {
+	err := ab.articleData.DeleteArticleById(id)
 	if err != nil {
-		return articles.ArticleCore{}, err, http.StatusInternalServerError
+		return err, http.StatusInternalServerError
 	}
 
-	return deletedArticle, nil, http.StatusAccepted
+	return nil, http.StatusAccepted
 }
 
 func (ab *articleBusiness) CreateArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
@@ -65,5 +65,10 @@ func (ab *articleBusiness) CreateArticle(article articles.ArticleCore) (articles
 }
 
 func (ab *articleBusiness) EditArticle(article articles.ArticleCore) (articles.ArticleCore, error, int) {
-	return articles.ArticleCore{}, nil, http.StatusOK
+	editedArticle, err := ab.articleData.UpdateArticle(article)
+	if err != nil {
+		return article, err, http.StatusInternalServerError
+	}
+
+	return editedArticle, nil, http.StatusOK
 }
