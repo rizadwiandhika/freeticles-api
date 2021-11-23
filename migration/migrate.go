@@ -52,6 +52,12 @@ func AutoMigrate() {
 		AuthorID: 1,
 		Tags:     tags,
 	}
+	arr2 := article.Article{
+		Title:    "Another Article",
+		Content:  `Again... random content`,
+		AuthorID: 2,
+		Tags:     tags,
+	}
 
 	err = config.DB.Create(&usr1).Error
 	if err != nil {
@@ -63,6 +69,10 @@ func AutoMigrate() {
 	}
 
 	err = config.DB.Create(&arr).Error
+	if err != nil {
+		panic(err)
+	}
+	err = config.DB.Create(&arr2).Error
 	if err != nil {
 		panic(err)
 	}
