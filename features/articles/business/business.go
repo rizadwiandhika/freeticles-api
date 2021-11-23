@@ -57,6 +57,15 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	return articleData, nil, http.StatusOK
 }
 
+func (ab *articleBusiness) FindArticleByAuthorId(id uint) ([]articles.ArticleCore, error, int) {
+	userArticles, err := ab.articleData.SelectArticleByAuthorId(id)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+
+	return userArticles, nil, http.StatusOK
+}
+
 func (ab *articleBusiness) RemoveArticleById(id uint) (error, int) {
 	err := ab.articleData.DeleteArticleById(id)
 	if err != nil {
