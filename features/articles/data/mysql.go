@@ -36,7 +36,7 @@ func (ar *articleRepository) SelectArticles(q articles.QueryParams) ([]articles.
 		tx = tx.Where("DATE(articles.created_at) = ?", today) // today will be like '2021-04-22'
 	}
 
-	err := tx.Preload("Tags").Offset(q.Offset).Limit(q.Limit).Find(&articles).Error
+	err := tx.Preload("Tags").Limit(q.Limit).Offset(q.Offset).Find(&articles).Error
 	if err != nil {
 		return nil, err
 	}
