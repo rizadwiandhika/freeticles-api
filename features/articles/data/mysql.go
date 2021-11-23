@@ -66,10 +66,8 @@ func (ar *articleRepository) InsertArticle(article articles.ArticleCore) (articl
 func (ar *articleRepository) UpdateArticle(article articles.ArticleCore) (articles.ArticleCore, error) {
 	updatedTags := make([]Tag, len(article.Tags))
 
-	for _, tag := range article.Tags {
-		updatedTags = append(updatedTags, Tag{
-			Tag: tag.Tag,
-		})
+	for i, tag := range article.Tags {
+		updatedTags[i] = Tag{Tag: tag.Tag, ArticleID: article.ID}
 	}
 
 	updatedArticle := Article{
