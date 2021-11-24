@@ -43,6 +43,21 @@ func (ap *ArticlePresentation) GetArticles(c echo.Context) error {
 	return c.JSON(http.StatusOK, json{"articles": articles})
 }
 
+func (ap *ArticlePresentation) GetUserArticles(c echo.Context) error {
+	var username string
+	echo.PathParamsBinder(c).String("username", &username)
+
+	articles, err, status := ap.articleBusiness.FindUserArticles(username)
+	if err != nil {
+		return c.JSON(status, json{
+			"message": "Could not get user articles",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, json{"articles": articles})
+}
+
 func (ap *ArticlePresentation) GetDetailArticle(c echo.Context) error {
 	var id uint
 	echo.PathParamsBinder(c).Uint("id", &id)
