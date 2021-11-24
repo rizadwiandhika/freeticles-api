@@ -55,6 +55,16 @@ func (ar *articleRepository) SelectArticleById(id uint) (articles.ArticleCore, e
 	return toArticleCore(&article), nil
 }
 
+func (ar *articleRepository) SelectArticlesByAuthorId(id uint) ([]articles.ArticleCore, error) {
+	articles := []Article{}
+	err := ar.db.Where("author_id = ?", id).Find(&articles).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return toSliceArticleCore(articles), nil
+}
+
 func (ar *articleRepository) DeleteArticleById(id uint) error {
 	return ar.db.Delete(Article{}, id).Error
 }
