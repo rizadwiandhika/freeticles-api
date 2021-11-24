@@ -57,8 +57,13 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	return articleData, nil, http.StatusOK
 }
 
-func (ab *articleBusiness) FindArticleByAuthorId(id uint) ([]articles.ArticleCore, error, int) {
-	userArticles, err := ab.articleData.SelectArticleByAuthorId(id)
+func (ab *articleBusiness) FindUserArticles(username string) ([]articles.ArticleCore, error, int) {
+	user, err := ab.userBusiness.FindUserByUsername(username)
+	if err != nil {
+		return nil, err, http.StatusInternalServerError
+	}
+
+	userArticles, err := ab.articleData.SelectArticlesByAuthorId(user.ID)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
