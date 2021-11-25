@@ -22,11 +22,7 @@ func (ub *userBusiness) FindUserById(id uint) (users.UserCore, error) {
 }
 
 func (ub *userBusiness) FindUsersByIds(ids []uint) ([]users.UserCore, error) {
-	users, err := ub.userData.SelectUsersByIds(ids)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
+	return ub.userData.SelectUsersByIds(ids)
 }
 
 func (ub *userBusiness) FindUsers() ([]users.UserCore, error) {
@@ -63,8 +59,7 @@ func (ub *userBusiness) EditUser(user users.UserCore) (users.UserCore, error) {
 		return users.UserCore{}, err
 	}
 
-	// user not found
-	if existingUser.Username == "" {
+	if existingUser.IsNotFound() {
 		return users.UserCore{}, errors.New("User not found")
 	}
 
@@ -88,8 +83,7 @@ func (ub *userBusiness) RemoveUser(username string) error {
 		return err
 	}
 
-	// user not found
-	if existingUser.Username == "" {
+	if existingUser.IsNotFound() {
 		return errors.New("User not found")
 	}
 
