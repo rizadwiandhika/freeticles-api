@@ -13,6 +13,17 @@ func NewMySQLRepository(db *gorm.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
+func (ur *userRepository) SelectUsersByIds(ids []uint) ([]users.UserCore, error) {
+	users := []User{}
+
+	err := ur.db.Where("id IN (?)", ids).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return toSliceUserCore(users), nil
+}
+
 func (ur *userRepository) SelectUserById(id uint) (users.UserCore, error) {
 	user := User{}
 
