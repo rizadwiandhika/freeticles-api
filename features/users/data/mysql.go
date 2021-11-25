@@ -1,6 +1,8 @@
 package data
 
 import (
+	"errors"
+
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
 	"gorm.io/gorm"
 )
@@ -17,18 +19,14 @@ func (ur *userRepository) SelectUsersByIds(ids []uint) ([]users.UserCore, error)
 	users := []User{}
 
 	err := ur.db.Where("id IN (?)", ids).Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return toSliceUserCore(users), nil
+	return toSliceUserCore(users), err
 }
 
 func (ur *userRepository) SelectUserById(id uint) (users.UserCore, error) {
 	user := User{}
 
 	err := ur.db.First(&user, id).Error
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return users.UserCore{}, err
 	}
 
@@ -39,18 +37,14 @@ func (ur *userRepository) SelectUsers() ([]users.UserCore, error) {
 	users := []User{}
 
 	err := ur.db.Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return toSliceUserCore(users), nil
+	return toSliceUserCore(users), err
 }
 
 func (ur *userRepository) SelectUserByUsername(username string) (users.UserCore, error) {
 	user := User{}
 
 	err := ur.db.Where("username = ?", username).First(&user).Error
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return users.UserCore{}, err
 	}
 
@@ -61,7 +55,7 @@ func (ur *userRepository) SelectUserByEmail(email string) (users.UserCore, error
 	user := User{}
 
 	err := ur.db.Where("email = ?", email).First(&user).Error
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return users.UserCore{}, err
 	}
 
