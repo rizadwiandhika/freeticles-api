@@ -21,6 +21,14 @@ func (ub *userBusiness) FindUserById(id uint) (users.UserCore, error) {
 	return ub.userData.SelectUserById(id)
 }
 
+func (ub *userBusiness) FindUsersByIds(ids []uint) ([]users.UserCore, error) {
+	users, err := ub.userData.SelectUsersByIds(ids)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (ub *userBusiness) FindUsers() ([]users.UserCore, error) {
 	return ub.userData.SelectUsers()
 }
