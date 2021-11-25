@@ -6,6 +6,7 @@ type UserCore struct {
 	ID        uint
 	Username  string
 	Email     string
+	Role      string
 	Name      string
 	Password  string
 	UpdatedAt time.Time
@@ -32,4 +33,8 @@ type IData interface {
 	InsertUser(user UserCore) (UserCore, error)
 	UpdateUser(user UserCore) (UserCore, error)
 	DeleteUser(username string) error
+}
+
+func (u *UserCore) IsNotFound() bool {
+	return u.ID == 0
 }
