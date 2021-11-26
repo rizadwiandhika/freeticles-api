@@ -6,6 +6,7 @@ type UserCore struct {
 	ID        uint
 	Username  string
 	Email     string
+	Role      string
 	Name      string
 	Password  string
 	UpdatedAt time.Time
@@ -13,14 +14,14 @@ type UserCore struct {
 }
 
 type IBusiness interface {
-	FindUsers() ([]UserCore, error)
-	FindUsersByIds(ids []uint) ([]UserCore, error)
-	FindUserById(id uint) (UserCore, error)
-	FindUserByUsername(username string) (UserCore, error)
-	FindUserByEmail(email string) (UserCore, error)
-	CreateUser(user UserCore) (UserCore, error)
-	EditUser(user UserCore) (UserCore, error)
-	RemoveUser(username string) error
+	FindUsers() ([]UserCore, error, int)
+	FindUsersByIds(ids []uint) ([]UserCore, error, int)
+	FindUserById(id uint) (UserCore, error, int)
+	FindUserByUsername(username string) (UserCore, error, int)
+	FindUserByEmail(email string) (UserCore, error, int)
+	CreateUser(user UserCore) (UserCore, error, int)
+	EditUser(user UserCore) (UserCore, error, int)
+	RemoveUser(username string) (error, int)
 }
 
 type IData interface {
@@ -32,4 +33,8 @@ type IData interface {
 	InsertUser(user UserCore) (UserCore, error)
 	UpdateUser(user UserCore) (UserCore, error)
 	DeleteUser(username string) error
+}
+
+func (u *UserCore) IsNotFound() bool {
+	return u.ID == 0
 }
