@@ -80,13 +80,11 @@ func (ur *userRepository) InsertUser(user users.UserCore) (users.UserCore, error
 
 func (ur *userRepository) UpdateUser(user users.UserCore) (users.UserCore, error) {
 	updatedUser := User{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		Name:      user.Name,
-		Password:  user.Password,
-		UpdatedAt: user.UpdatedAt,
-		CreatedAt: user.CreatedAt,
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Name:     user.Name,
+		Password: user.Password,
 	}
 
 	err := ur.db.Save(&updatedUser).Error
