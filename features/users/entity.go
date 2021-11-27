@@ -3,18 +3,29 @@ package users
 import "time"
 
 type UserCore struct {
-	ID        uint
-	Username  string
-	Email     string
-	Role      string
-	Name      string
-	Password  string
-	UpdatedAt time.Time
-	CreatedAt time.Time
+	ID         uint
+	Username   string
+	Email      string
+	Followers  []Follows
+	Followings []Follows
+	Role       string
+	Name       string
+	Password   string
+	UpdatedAt  time.Time
+	CreatedAt  time.Time
+}
+
+type Follows struct {
+	ID       uint
+	Username string
+	Email    string
+	Name     string
 }
 
 type IBusiness interface {
 	FindUsers() ([]UserCore, error, int)
+	FindUserFollowers(userID uint) ([]UserCore, error, int)
+	FindUserFollowings(userID uint) ([]UserCore, error, int)
 	FindUsersByIds(ids []uint) ([]UserCore, error, int)
 	FindUserById(id uint) (UserCore, error, int)
 	FindUserByUsername(username string) (UserCore, error, int)
@@ -22,10 +33,13 @@ type IBusiness interface {
 	CreateUser(user UserCore) (UserCore, error, int)
 	EditUser(user UserCore) (UserCore, error, int)
 	RemoveUser(username string) (error, int)
+	RemoveFollowing(userID uint) (error, int)
 }
 
 type IData interface {
 	SelectUsers() ([]UserCore, error)
+	SelectUserFollowers(userID uint) ([]UserCore, error)
+	SelectUserFollowings(userID uint) ([]UserCore, error)
 	SelectUserById(id uint) (UserCore, error)
 	SelectUsersByIds(ids []uint) ([]UserCore, error)
 	SelectUserByUsername(username string) (UserCore, error)
@@ -33,6 +47,7 @@ type IData interface {
 	InsertUser(user UserCore) (UserCore, error)
 	UpdateUser(user UserCore) (UserCore, error)
 	DeleteUser(username string) error
+	DeleteFollowing(userID uint) error
 }
 
 func (u *UserCore) IsNotFound() bool {
