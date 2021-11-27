@@ -45,6 +45,14 @@ func (ub *userBusiness) FindUsers() ([]users.UserCore, error, int) {
 	return fetchedUsers, nil, http.StatusOK
 }
 
+func (ub *userBusiness) FindUserFollowers(userID uint) ([]users.UserCore, error, int) {
+	return nil, nil, http.StatusOK
+}
+
+func (ub *userBusiness) FindUserFollowings(userID uint) ([]users.UserCore, error, int) {
+	return nil, nil, http.StatusOK
+}
+
 func (ub *userBusiness) FindUserByUsername(username string) (users.UserCore, error, int) {
 	fetchedUser, err := ub.userData.SelectUserByUsername(username)
 	if err != nil {
@@ -133,4 +141,8 @@ func (ub *userBusiness) RemoveUser(username string) (error, int) {
 		return err, http.StatusInternalServerError
 	}
 	return nil, http.StatusNoContent
+}
+
+func (ub *userBusiness) RemoveFollowing(userID uint) (error, int) {
+	return nil, http.StatusOK
 }

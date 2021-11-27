@@ -40,6 +40,14 @@ func (ur *userRepository) SelectUsers() ([]users.UserCore, error) {
 	return toSliceUserCore(users), err
 }
 
+func (ur *userRepository) SelectUserFollowers(userID uint) ([]users.UserCore, error) {
+	return nil, nil
+}
+
+func (ur *userRepository) SelectUserFollowings(userID uint) ([]users.UserCore, error) {
+	return nil, nil
+}
+
 func (ur *userRepository) SelectUserByUsername(username string) (users.UserCore, error) {
 	user := User{}
 
@@ -98,4 +106,8 @@ func (ur *userRepository) UpdateUser(user users.UserCore) (users.UserCore, error
 func (ur *userRepository) DeleteUser(username string) error {
 	err := ur.db.Where("username = ?", username).Delete(User{}).Error
 	return err
+}
+
+func (ur *userRepository) DeleteFollowing(userID uint) error {
+	return nil
 }
