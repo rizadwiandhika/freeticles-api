@@ -31,23 +31,27 @@ func (ab *authBusniess) Authenticate(user auth.UserCore) (string, error, int) {
 	var err error
 
 	if user.Username != "" {
-		fetchedUser, err = ab.ub.FindUserByUsername(user.Username)
+		fetchedUser, err, _ = ab.ub.FindUserByUsername(user.Username)
 	} else {
-		fetchedUser, err = ab.ub.FindUserByEmail(user.Email)
+		fetchedUser, err, _ = ab.ub.FindUserByEmail(user.Email)
 	}
 	if err != nil {
 		return "", err, http.StatusInternalServerError
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(fetchedUser.Password), []byte(user.Password))
-	if err != nil {
-		// err = errors.New("wrong username or password")
-		return "", err, http.StatusNotAcceptable
+	switch err {
+	case nil: // do nothing
+	case bcrypt.ErrMismatchedHashAndPassword:
+		return "", errors.New("Invalid username or password"), http.StatusUnauthorized
+	default:
+		return "", err, http.StatusInternalServerError
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId":   fetchedUser.ID,
 		"username": fetchedUser.Username,
+		"role":     fetchedUser.Role,
 		"exp":      time.Now().Add(3 * time.Hour).Unix(),
 	})
 
@@ -67,9 +71,9 @@ func (ab *authBusniess) Register(user auth.UserCore) (auth.UserCore, error, int)
 		Name:     user.Name,
 	}
 
-	result, err := ab.ub.CreateUser(newUser)
+	result, err, _ := ab.ub.CreateUser(newUser)
 	if err != nil {
-		return auth.UserCore{}, err, http.StatusInternalServerError
+		return user, err, http.StatusInternalServerError
 	}
 
 	createdUser := auth.UserCore{

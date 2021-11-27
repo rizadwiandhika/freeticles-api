@@ -12,6 +12,7 @@ type Register struct {
 type Login struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 func (r *Register) ToUserCore() auth.UserCore {
@@ -27,5 +28,6 @@ func (l *Login) ToUserCore() auth.UserCore {
 	return auth.UserCore{
 		Username: l.Username,
 		Password: l.Password,
+		Email:    l.Email,
 	}
 }
