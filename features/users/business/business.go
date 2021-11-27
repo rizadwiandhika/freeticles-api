@@ -45,12 +45,40 @@ func (ub *userBusiness) FindUsers() ([]users.UserCore, error, int) {
 	return fetchedUsers, nil, http.StatusOK
 }
 
-func (ub *userBusiness) FindUserFollowers(userID uint) ([]users.UserCore, error, int) {
-	return nil, nil, http.StatusOK
+func (ub *userBusiness) FindUserFollowers(username string) (users.UserCore, error, int) {
+	user, err := ub.userData.SelectUserByUsername(username)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+	if user.IsNotFound() {
+		return user, errors.New("User not found"), http.StatusNotFound
+	}
+
+	followers, err := ub.userData.SelectUserFollowers(user.ID)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+
+	user.Followers = followers
+	return user, nil, http.StatusOK
 }
 
-func (ub *userBusiness) FindUserFollowings(userID uint) ([]users.UserCore, error, int) {
-	return nil, nil, http.StatusOK
+func (ub *userBusiness) FindUserFollowings(username string) (users.UserCore, error, int) {
+	user, err := ub.userData.SelectUserByUsername(username)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+	if user.IsNotFound() {
+		return user, errors.New("User not found"), http.StatusNotFound
+	}
+
+	followings, err := ub.userData.SelectUserFollowings(user.ID)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+
+	user.Followings = followings
+	return user, nil, http.StatusOK
 }
 
 func (ub *userBusiness) FindUserByUsername(username string) (users.UserCore, error, int) {
@@ -143,6 +171,18 @@ func (ub *userBusiness) RemoveUser(username string) (error, int) {
 	return nil, http.StatusNoContent
 }
 
-func (ub *userBusiness) RemoveFollowing(userID uint) (error, int) {
+func (ub *userBusiness) RemoveFollowing(username string) (error, int) {
+	followingUser, err := ub.userData.SelectUserByUsername(username)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if followingUser.IsNotFound() {
+		return errors.New("User following not found"), http.StatusNotFound
+	}
+
+	err = ub.userData.DeleteFollowing(followingUser.ID)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
 	return nil, http.StatusOK
 }
