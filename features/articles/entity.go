@@ -61,3 +61,7 @@ type IData interface {
 	InsertArticle(article ArticleCore) (ArticleCore, error)
 	UpdateArticle(article ArticleCore) (ArticleCore, error)
 }
+
+func (a *ArticleCore) IsNotFound() bool {
+	return a.ID == 0
+}
