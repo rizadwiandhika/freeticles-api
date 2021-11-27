@@ -40,11 +40,11 @@ func (ur *userRepository) SelectUsers() ([]users.UserCore, error) {
 	return toSliceUserCore(users), err
 }
 
-func (ur *userRepository) SelectUserFollowers(userID uint) ([]users.UserCore, error) {
+func (ur *userRepository) SelectUserFollowers(userID uint) ([]users.FollowsCore, error) {
 	return nil, nil
 }
 
-func (ur *userRepository) SelectUserFollowings(userID uint) ([]users.UserCore, error) {
+func (ur *userRepository) SelectUserFollowings(userID uint) ([]users.FollowsCore, error) {
 	return nil, nil
 }
 
