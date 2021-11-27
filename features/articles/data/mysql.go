@@ -37,18 +37,14 @@ func (ar *articleRepository) SelectArticles(q articles.QueryParams) ([]articles.
 	}
 
 	err := tx.Preload("Tags").Limit(q.Limit).Offset(q.Offset).Find(&articles).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return toSliceArticleCore(articles), nil
+	return toSliceArticleCore(articles), err
 }
 
 func (ar *articleRepository) SelectArticleById(id uint) (articles.ArticleCore, error) {
 	article := Article{}
 
 	err := ar.db.Preload("Tags").First(&article, id).Error
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return articles.ArticleCore{}, err
 	}
 
