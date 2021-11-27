@@ -1,6 +1,7 @@
 package business
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
@@ -26,7 +27,7 @@ func (ab *articleBusiness) FindArticles(params articles.QueryParams) ([]articles
 	}
 
 	for i := range articlesData {
-		userData, err := ab.userBusiness.FindUserById(articlesData[i].AuthorID)
+		userData, err, _ := ab.userBusiness.FindUserById(articlesData[i].AuthorID)
 		if err != nil {
 			return nil, err, http.StatusInternalServerError
 		}
@@ -44,8 +45,11 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 	if err != nil {
 		return articles.ArticleCore{}, err, http.StatusInternalServerError
 	}
+	if articleData.IsNotFound() {
+		return articleData, errors.New("Article not found"), http.StatusNotFound
+	}
 
-	userData, err := ab.userBusiness.FindUserById(articleData.AuthorID)
+	userData, err, _ := ab.userBusiness.FindUserById(articleData.AuthorID)
 	if err != nil {
 		return articles.ArticleCore{}, err, http.StatusInternalServerError
 	}
@@ -58,7 +62,7 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 }
 
 func (ab *articleBusiness) FindUserArticles(username string) ([]articles.ArticleCore, error, int) {
-	user, err := ab.userBusiness.FindUserByUsername(username)
+	user, err, _ := ab.userBusiness.FindUserByUsername(username)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
