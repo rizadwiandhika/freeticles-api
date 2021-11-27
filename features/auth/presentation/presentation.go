@@ -6,11 +6,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/auth"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/auth/presentation/request"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/auth/presentation/response"
 )
 
 type any interface{}
 type json map[string]any
-type list []any
 
 type AuthPresentation struct {
 	ab auth.IBusiness
@@ -24,11 +24,10 @@ func NewPresentation(ab auth.IBusiness) *AuthPresentation {
 
 func (ap *AuthPresentation) PostLogin(c echo.Context) error {
 	user := request.Login{}
-
 	err := c.Bind(&user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, json{
-			"message": "Failed creating user",
+			"message": "Something went wrong...",
 			"error":   err.Error(),
 		})
 	}
@@ -37,28 +36,24 @@ func (ap *AuthPresentation) PostLogin(c echo.Context) error {
 	jwtToken, err, status := ap.ab.Authenticate(userCore)
 	if err != nil {
 		return c.JSON(status, json{
-			"message":  "Failed authenticating",
-			"username": user.Username,
-			"password": user.Password,
-			"error":    err.Error(),
+			"message": "Authentication failed",
+			"error":   err.Error(),
+			"user":    response.ToUserLoginFailed(userCore),
 		})
 	}
 
 	return c.JSON(status, json{
-		"message":  "Successfully login",
-		"token":    jwtToken,
-		"username": user.Username,
+		"message": "Successfully login",
+		"token":   jwtToken,
 	})
-
 }
 
 func (ap *AuthPresentation) PostRegister(c echo.Context) error {
 	newUser := request.Register{}
-
 	err := c.Bind(&newUser)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, json{
-			"message": "Failed creating user",
+			"message": "Something went wrong...",
 			"error":   err.Error(),
 		})
 	}
@@ -69,12 +64,12 @@ func (ap *AuthPresentation) PostRegister(c echo.Context) error {
 		return c.JSON(status, json{
 			"message": "Failed creating user",
 			"error":   err.Error(),
-			"user":    userCore,
+			"user":    response.ToUserRegisterFailed(userCore),
 		})
 	}
 
-	return c.JSON(http.StatusCreated, json{
+	return c.JSON(status, json{
 		"message": "User created",
-		"user":    createdUser,
+		"user":    response.ToUserRegisterSuccess(createdUser),
 	})
 }
