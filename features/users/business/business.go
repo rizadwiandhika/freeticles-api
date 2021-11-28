@@ -2,6 +2,7 @@ package business
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
@@ -59,6 +60,28 @@ func (ub *userBusiness) FindUserFollowers(username string) (users.UserCore, erro
 		return user, err, http.StatusInternalServerError
 	}
 
+	followersUserIds := make([]uint, len(followers))
+	for i, following := range followers {
+		followersUserIds[i] = following.FollowerID
+	}
+
+	followerUsers, err := ub.userData.SelectUsersByIds(followersUserIds)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+
+	followersMap := make(map[uint]users.UserCore)
+	for _, followingUser := range followerUsers {
+		followersMap[followingUser.ID] = followingUser
+	}
+
+	for i := range followers {
+		FollowingUserID := followers[i].FollowerID
+		followers[i].FollowerUsername = followersMap[FollowingUserID].Username
+		followers[i].FollowerEmail = followersMap[FollowingUserID].Email
+		followers[i].FollowerName = followersMap[FollowingUserID].Name
+	}
+
 	user.Followers = followers
 	return user, nil, http.StatusOK
 }
@@ -76,8 +99,31 @@ func (ub *userBusiness) FindUserFollowings(username string) (users.UserCore, err
 	if err != nil {
 		return user, err, http.StatusInternalServerError
 	}
+	fmt.Printf("%+v\n", followings)
 
-	user.Followings = followings
+	followingIds := make([]uint, len(followings))
+	for i, following := range followings {
+		followingIds[i] = following.UserID
+	}
+
+	followingUsers, err := ub.userData.SelectUsersByIds(followingIds)
+	if err != nil {
+		return user, err, http.StatusInternalServerError
+	}
+
+	followingsMap := make(map[uint]users.UserCore)
+	for _, followingUser := range followingUsers {
+		followingsMap[followingUser.ID] = followingUser
+	}
+
+	for i := range followings {
+		FollowingUserID := followings[i].UserID
+		followings[i].FollowerUsername = followingsMap[FollowingUserID].Username
+		followings[i].FollowerEmail = followingsMap[FollowingUserID].Email
+		followings[i].FollowerName = followingsMap[FollowingUserID].Name
+	}
+
+	user.Followers = followings
 	return user, nil, http.StatusOK
 }
 
@@ -127,6 +173,34 @@ func (ub *userBusiness) CreateUser(user users.UserCore) (users.UserCore, error, 
 	return newUser, nil, http.StatusCreated
 }
 
+func (ub *userBusiness) CreateFollower(username string, followerUsername string) (error, int) {
+	user, err := ub.userData.SelectUserByUsername(username)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if user.IsNotFound() {
+		return errors.New("User not found"), http.StatusNotFound
+	}
+
+	followerUser, err := ub.userData.SelectUserByUsername(followerUsername)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if followerUser.IsNotFound() {
+		return errors.New("User not found"), http.StatusNotFound
+	}
+
+	follower := users.FollowerCore{
+		UserID:     user.ID,
+		FollowerID: followerUser.ID,
+	}
+	err = ub.userData.InsertFollower(follower)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	return nil, http.StatusCreated
+}
+
 func (ub *userBusiness) EditUser(user users.UserCore) (users.UserCore, error, int) {
 	existingUser, err := ub.userData.SelectUserByUsername(user.Username)
 	if err != nil {
@@ -171,8 +245,16 @@ func (ub *userBusiness) RemoveUser(username string) (error, int) {
 	return nil, http.StatusNoContent
 }
 
-func (ub *userBusiness) RemoveFollowing(username string) (error, int) {
-	followingUser, err := ub.userData.SelectUserByUsername(username)
+func (ub *userBusiness) RemoveFollowing(username string, followingUsername string) (error, int) {
+	user, err := ub.userData.SelectUserByUsername(username)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	if user.IsNotFound() {
+		return errors.New("User following not found"), http.StatusNotFound
+	}
+
+	followingUser, err := ub.userData.SelectUserByUsername(followingUsername)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
@@ -180,7 +262,11 @@ func (ub *userBusiness) RemoveFollowing(username string) (error, int) {
 		return errors.New("User following not found"), http.StatusNotFound
 	}
 
-	err = ub.userData.DeleteFollowing(followingUser.ID)
+	following := users.FollowerCore{
+		UserID:     followingUser.ID,
+		FollowerID: user.ID,
+	}
+	err = ub.userData.DeleteFollowing(following)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}

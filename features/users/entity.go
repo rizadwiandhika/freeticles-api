@@ -3,23 +3,23 @@ package users
 import "time"
 
 type UserCore struct {
-	ID         uint
-	Username   string
-	Email      string
-	Followers  []FollowsCore
-	Followings []FollowsCore
-	Role       string
-	Name       string
-	Password   string
-	UpdatedAt  time.Time
-	CreatedAt  time.Time
+	ID        uint
+	Username  string
+	Email     string
+	Followers []FollowerCore
+	Role      string
+	Name      string
+	Password  string
+	UpdatedAt time.Time
+	CreatedAt time.Time
 }
 
-type FollowsCore struct {
-	ID       uint
-	Username string
-	Email    string
-	Name     string
+type FollowerCore struct {
+	UserID           uint
+	FollowerID       uint
+	FollowerUsername string
+	FollowerEmail    string
+	FollowerName     string
 }
 
 type IBusiness interface {
@@ -31,23 +31,25 @@ type IBusiness interface {
 	FindUserByUsername(username string) (UserCore, error, int)
 	FindUserByEmail(email string) (UserCore, error, int)
 	CreateUser(user UserCore) (UserCore, error, int)
+	CreateFollower(username string, followerUsername string) (error, int)
 	EditUser(user UserCore) (UserCore, error, int)
 	RemoveUser(username string) (error, int)
-	RemoveFollowing(username string) (error, int)
+	RemoveFollowing(username string, followingUsername string) (error, int)
 }
 
 type IData interface {
 	SelectUsers() ([]UserCore, error)
-	SelectUserFollowers(userID uint) ([]FollowsCore, error)
-	SelectUserFollowings(userID uint) ([]FollowsCore, error)
+	SelectUserFollowers(userID uint) ([]FollowerCore, error)
+	SelectUserFollowings(userID uint) ([]FollowerCore, error)
 	SelectUserById(id uint) (UserCore, error)
 	SelectUsersByIds(ids []uint) ([]UserCore, error)
 	SelectUserByUsername(username string) (UserCore, error)
 	SelectUserByEmail(email string) (UserCore, error)
 	InsertUser(user UserCore) (UserCore, error)
+	InsertFollower(follower FollowerCore) error
 	UpdateUser(user UserCore) (UserCore, error)
 	DeleteUser(username string) error
-	DeleteFollowing(userId uint) error
+	DeleteFollowing(following FollowerCore) error
 }
 
 func (u *UserCore) IsNotFound() bool {

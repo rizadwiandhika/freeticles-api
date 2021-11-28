@@ -40,12 +40,16 @@ func (ur *userRepository) SelectUsers() ([]users.UserCore, error) {
 	return toSliceUserCore(users), err
 }
 
-func (ur *userRepository) SelectUserFollowers(userID uint) ([]users.UserCore, error) {
-	return nil, nil
+func (ur *userRepository) SelectUserFollowers(userID uint) ([]users.FollowerCore, error) {
+	followers := []Follower{}
+	err := ur.db.Where("user_id = ?", userID).Find(&followers).Error
+	return toSliceFollowerCore(followers), err
 }
 
-func (ur *userRepository) SelectUserFollowings(userID uint) ([]users.UserCore, error) {
-	return nil, nil
+func (ur *userRepository) SelectUserFollowings(userID uint) ([]users.FollowerCore, error) {
+	followings := []Follower{}
+	err := ur.db.Where("follower_id = ?", userID).Find(&followings).Error
+	return toSliceFollowerCore(followings), err
 }
 
 func (ur *userRepository) SelectUserByUsername(username string) (users.UserCore, error) {
@@ -86,6 +90,14 @@ func (ur *userRepository) InsertUser(user users.UserCore) (users.UserCore, error
 	return toUserCore(&newUser), nil
 }
 
+func (ur *userRepository) InsertFollower(follower users.FollowerCore) error {
+	newFollower := Follower{
+		UserID:     follower.UserID,
+		FollowerID: follower.FollowerID,
+	}
+	return ur.db.Create(&newFollower).Error
+}
+
 func (ur *userRepository) UpdateUser(user users.UserCore) (users.UserCore, error) {
 	updatedUser := User{
 		ID:       user.ID,
@@ -108,6 +120,6 @@ func (ur *userRepository) DeleteUser(username string) error {
 	return err
 }
 
-func (ur *userRepository) DeleteFollowing(userID uint) error {
-	return nil
+func (ur *userRepository) DeleteFollowing(following users.FollowerCore) error {
+	return ur.db.Where("user_id = ? AND follower_id = ?", following.UserID, following.FollowerID).Delete(&Follower{}).Error
 }
