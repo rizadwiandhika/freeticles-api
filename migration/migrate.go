@@ -2,6 +2,8 @@ package migration
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 
 	"github.com/rizadwiandhika/miniproject-backend-alterra/config"
 	article "github.com/rizadwiandhika/miniproject-backend-alterra/features/articles/data"
@@ -11,29 +13,37 @@ import (
 )
 
 func AutoMigrate() {
-	if err := config.DB.Exec("DROP TABLE IF EXISTS tags").Error; err != nil {
+	db := config.DB
+	if err := db.Exec("DROP TABLE IF EXISTS tags").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS comments").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS comments").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS likes").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS likes").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS reports").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS reports").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS report_types").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS report_types").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS articles").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS articles").Error; err != nil {
 		panic(err)
 	}
-	if err := config.DB.Exec("DROP TABLE IF EXISTS users").Error; err != nil {
+	if err := db.Exec("DROP TABLE IF EXISTS followers").Error; err != nil {
+		panic(err)
+	}
+	if err := db.Exec("DROP TABLE IF EXISTS users").Error; err != nil {
 		panic(err)
 	}
 
-	err := config.DB.AutoMigrate(
+	err := db.SetupJoinTable(&user.User{}, "Followers", &user.Follower{})
+	if err != nil {
+		panic(err)
+	}
+	err = db.AutoMigrate(
 		&user.User{},
 		&article.Article{},
 		&article.Tag{},
@@ -42,15 +52,24 @@ func AutoMigrate() {
 		&reaction.ReportType{},
 		&reaction.Report{},
 	)
-
 	if err != nil {
 		panic(err)
 	}
 
 	populateDBWithDummyData()
+
+	var followers []user.Follower
+	err = db.Where("follower_id = ?", 2).Find(&followers).Error
+	// err = db.Where("user_id = ?", 1).Find(&followers).Error
+	// err = db.Raw("SELECT * FROM followers WHERE user_id = ?", 1).Scan(&followers).Error
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(outputAsJSON(followers))
 }
 
 func populateDBWithDummyData() {
+	db := config.DB
 	pw1, err := bcrypt.GenerateFromPassword([]byte("riza123"), 14)
 	if err != nil {
 		panic(err)
@@ -72,7 +91,7 @@ func populateDBWithDummyData() {
 		Name:     "Riza Dwi Andhika",
 	}
 	usr2 := user.User{
-		Username: "hernowoari",
+		Username: "hernowo",
 		Email:    "hernowo@mail.com",
 		Password: string(pw2),
 		Name:     "Hernowo Ari Sutanto",
@@ -84,15 +103,43 @@ func populateDBWithDummyData() {
 		Name:     "Hammim Eka",
 	}
 
-	err = config.DB.Create(&usr1).Error
+	err = db.Create(&usr1).Error
 	if err != nil {
 		panic(err)
 	}
-	err = config.DB.Create(&usr2).Error
+	err = db.Create(&usr2).Error
 	if err != nil {
 		panic(err)
 	}
-	err = config.DB.Create(&usr3).Error
+	err = db.Create(&usr3).Error
+	if err != nil {
+		panic(err)
+	}
+
+	/* 3 ways to save or add user followers (using save or append method) */
+	usr1.Followers = []*user.User{{ID: 2}, {ID: 3}}
+	err = db.Save(&usr1).Error
+	if err != nil {
+		panic(err)
+	}
+	err = db.Model(&usr2).Association("Followers").Append([]user.User{{ID: 3}})
+	if err != nil {
+		panic(err)
+	}
+	follower := user.Follower{
+		UserID:     3,
+		FollowerID: 1,
+	}
+	err = db.Create(&follower).Error
+	if err != nil {
+		fmt.Printf("err type: %s\n", reflect.TypeOf(err))
+		panic(err)
+	}
+	deleteFollower := user.Follower{
+		UserID:     3,
+		FollowerID: 2,
+	}
+	err = db.Delete(&deleteFollower).Error
 	if err != nil {
 		panic(err)
 	}
@@ -118,11 +165,11 @@ func populateDBWithDummyData() {
 		},
 	}
 
-	err = config.DB.Create(&arr1).Error
+	err = db.Create(&arr1).Error
 	if err != nil {
 		panic(err)
 	}
-	err = config.DB.Create(&arr2).Error
+	err = db.Create(&arr2).Error
 	if err != nil {
 		panic(err)
 	}
@@ -140,15 +187,15 @@ func populateDBWithDummyData() {
 		Description: "Users somehow just don't like the article content",
 	}
 
-	err = config.DB.Create(&rt1).Error
+	err = db.Create(&rt1).Error
 	if err != nil {
 		panic(err)
 	}
-	err = config.DB.Create(&rt2).Error
+	err = db.Create(&rt2).Error
 	if err != nil {
 		panic(err)
 	}
-	err = config.DB.Create(&rt3).Error
+	err = db.Create(&rt3).Error
 	if err != nil {
 		panic(err)
 	}
