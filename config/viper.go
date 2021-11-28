@@ -11,6 +11,8 @@ type Env struct {
 	DB_NAME     string `mapstructure:"DB_NAME"`
 	DB_USERNAME string `mapstructure:"DB_USERNAME"`
 	DB_PASSWORD string `mapstructure:"DB_PASSWORD"`
+	DB_HOST     string `mapstructure:"DB_HOST"`
+	DB_PORT     string `mapstructure:"DB_PORT"`
 }
 
 var ENV Env
