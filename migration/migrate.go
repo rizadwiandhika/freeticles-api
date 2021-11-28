@@ -7,6 +7,7 @@ import (
 
 	"github.com/rizadwiandhika/miniproject-backend-alterra/config"
 	article "github.com/rizadwiandhika/miniproject-backend-alterra/features/articles/data"
+	bookmark "github.com/rizadwiandhika/miniproject-backend-alterra/features/bookmarks/data"
 	reaction "github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions/data"
 	user "github.com/rizadwiandhika/miniproject-backend-alterra/features/users/data"
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +15,9 @@ import (
 
 func AutoMigrate() {
 	db := config.DB
+	if err := db.Exec("DROP TABLE IF EXISTS bookmarks").Error; err != nil {
+		panic(err)
+	}
 	if err := db.Exec("DROP TABLE IF EXISTS tags").Error; err != nil {
 		panic(err)
 	}
@@ -51,6 +55,7 @@ func AutoMigrate() {
 		&reaction.Like{},
 		&reaction.ReportType{},
 		&reaction.Report{},
+		&bookmark.Bookmark{},
 	)
 	if err != nil {
 		panic(err)
