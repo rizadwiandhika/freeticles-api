@@ -9,6 +9,12 @@ type User struct {
 	Name     string `json:"name"`
 }
 
+type UserFollower struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+}
+
 func FromUserCore(u *users.UserCore) User {
 	return User{
 		ID:       u.ID,
@@ -17,11 +23,22 @@ func FromUserCore(u *users.UserCore) User {
 		Name:     u.Name,
 	}
 }
-
 func FromSliceUserCore(u []users.UserCore) []User {
 	users := make([]User, len(u))
 	for i, v := range u {
 		users[i] = FromUserCore(&v)
 	}
 	return users
+}
+
+func FromSliceFollowerCore(f []users.FollowerCore) []UserFollower {
+	followers := make([]UserFollower, len(f))
+	for i, v := range f {
+		followers[i] = UserFollower{
+			Username: v.FollowerUsername,
+			Email:    v.FollowerEmail,
+			Name:     v.FollowerName,
+		}
+	}
+	return followers
 }
