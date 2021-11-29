@@ -150,7 +150,8 @@ func populateDBWithDummyData() {
 	}
 
 	arr1 := article.Article{
-		Title:    "Test Article",
+		Title:    "Kenapa harus pake bahasa GO?",
+		Subtitle: "Jadi ada alasannya gini bro...",
 		Content:  `Some random content`,
 		AuthorID: 1,
 		Tags: []article.Tag{
@@ -160,7 +161,8 @@ func populateDBWithDummyData() {
 		},
 	}
 	arr2 := article.Article{
-		Title:    "Another Article",
+		Title:    "Saos sambel vs kecap",
+		Subtitle: "Ternyata makan tahu enaknya pake ini!",
 		Content:  `Again... random content`,
 		AuthorID: 2,
 		Tags: []article.Tag{
