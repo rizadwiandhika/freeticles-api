@@ -50,3 +50,10 @@ func (br *bookmarkRepository) DeleteBookmark(bookmark bookmarks.BookmarkCore) er
 	articleID := bookmark.ArticleID
 	return br.db.Where("user_id = ? AND article_id = ?", userID, articleID).Delete(&Bookmark{}).Error
 }
+
+func (br *bookmarkRepository) DeleteBookmarksByArticleId(articleID uint) error {
+	return br.db.Where("article_id = ?", articleID).Delete(&Bookmark{}).Error
+}
+func (br *bookmarkRepository) DeleteBookmarksByUserId(userID uint) error {
+	return br.db.Where("user_id = ?", userID).Delete(&Bookmark{}).Error
+}
