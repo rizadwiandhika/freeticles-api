@@ -6,18 +6,30 @@ import (
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
 )
 
-type Article struct {
+type ModifiedArticle struct {
 	ID        uint      `json:"id"`
 	AuthorID  uint      `json:"authorId"`
-	Author    User      `json:"author"`
-	Tags      []Tag     `json:"tags"`
+	Tags      []string  `json:"tags"`
 	Title     string    `json:"title"`
 	Subtitle  string    `json:"subtitle"`
 	Content   string    `json:"content"`
 	Thumbnail string    `json:"thumbnail"`
 	Nsfw      bool      `json:"nsfw"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type Article struct {
+	ID        uint      `json:"id"`
+	AuthorID  uint      `json:"authorId"`
+	Author    User      `json:"author"`
+	Tags      []string  `json:"tags"`
 	Likes     int       `json:"likes"`
-	Comments  []Comment `json:"comments"`
+	Title     string    `json:"title"`
+	Subtitle  string    `json:"subtitle"`
+	Content   string    `json:"content"`
+	Thumbnail string    `json:"thumbnail"`
+	Nsfw      bool      `json:"nsfw"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedAt time.Time `json:"createdAt"`
 }
@@ -40,18 +52,42 @@ type Comment struct {
 }
 
 func FromArticleCore(a *articles.ArticleCore) Article {
+	tags := make([]string, len(a.Tags))
+	for i, tag := range a.Tags {
+		tags[i] = tag.Tag
+	}
+
 	return Article{
 		ID:        a.ID,
 		AuthorID:  a.AuthorID,
 		Author:    FromUserCore(&a.Author),
-		Tags:      FromSliceTagCore(a.Tags),
+		Likes:     a.Likes,
+		Tags:      tags,
 		Title:     a.Title,
 		Subtitle:  a.Subtitle,
 		Content:   a.Content,
 		Thumbnail: a.Thumbnail,
 		Nsfw:      a.Nsfw,
-		Likes:     a.Likes,
-		Comments:  FromSliceCommentCore(a.Comments),
+		UpdatedAt: a.UpdatedAt,
+		CreatedAt: a.CreatedAt,
+	}
+}
+
+func FromArticleCoreToModifiedArticle(a *articles.ArticleCore) ModifiedArticle {
+	tags := make([]string, len(a.Tags))
+	for i, tag := range a.Tags {
+		tags[i] = tag.Tag
+	}
+
+	return ModifiedArticle{
+		ID:        a.ID,
+		AuthorID:  a.AuthorID,
+		Tags:      tags,
+		Title:     a.Title,
+		Subtitle:  a.Subtitle,
+		Content:   a.Content,
+		Thumbnail: a.Thumbnail,
+		Nsfw:      a.Nsfw,
 		UpdatedAt: a.UpdatedAt,
 		CreatedAt: a.CreatedAt,
 	}
@@ -78,6 +114,14 @@ func FromCommentCore(c *articles.CommentCore) Comment {
 		CreatedAt: c.CreatedAt,
 		User:      FromUserCore(&c.User),
 	}
+}
+
+func FromSliceArticleCore(a []articles.ArticleCore) []Article {
+	articles := make([]Article, len(a))
+	for i, v := range a {
+		articles[i] = FromArticleCore(&v)
+	}
+	return articles
 }
 
 func FromSliceTagCore(t []articles.TagCore) []Tag {
