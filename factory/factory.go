@@ -2,6 +2,8 @@ package factory
 
 import (
 	"github.com/rizadwiandhika/miniproject-backend-alterra/config"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/third-parties/image/cloudmersive"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/third-parties/translate/libre"
 
 	articlesBusiness "github.com/rizadwiandhika/miniproject-backend-alterra/features/articles/business"
 	articlesData "github.com/rizadwiandhika/miniproject-backend-alterra/features/articles/data"
@@ -32,15 +34,29 @@ type Presenter struct {
 }
 
 func New() *Presenter {
+	libreTranslate := libre.NewTranslate()
+	cloudmersiveImageAnalyzer := cloudmersive.NewImageAnalyzer()
+
 	userData := usersData.NewMySQLRepository(config.DB)
 	articleData := articlesData.NewMySQLRepository(config.DB)
 	reactionData := reactionsData.NewMySQLRepository(config.DB)
 	bookmarkData := bookmarksData.NewMySQLRepository(config.DB)
 
-	userBusiness := usersBusiness.NewBusiness(userData)
-	articleBusiness := articlesBusiness.NewBusiness(articleData, userBusiness)
+	userBusiness := usersBusiness.NewBusiness(
+		userData,
+		articlesBusiness.NewBusiness(articleData, nil, nil, nil, nil),
+		reactionsBusiness.NewBusiness(reactionData, nil, nil, nil),
+		bookmarksBusiness.NewBusiness(bookmarkData, nil, nil),
+	)
+	articleBusiness := articlesBusiness.NewBusiness(
+		articleData,
+		libreTranslate,
+		userBusiness,
+		reactionsBusiness.NewBusiness(reactionData, nil, nil, nil),
+		bookmarksBusiness.NewBusiness(bookmarkData, nil, nil),
+	)
 	authBusiness := authBusiness.NewBusniness(userBusiness)
-	reactionBusiness := reactionsBusiness.NewBusiness(reactionData, userBusiness, articleBusiness)
+	reactionBusiness := reactionsBusiness.NewBusiness(reactionData, cloudmersiveImageAnalyzer, userBusiness, articleBusiness)
 	bookmarkBusiness := bookmarksBusiness.NewBusiness(bookmarkData, userBusiness, articleBusiness)
 
 	userPresentation := usersPresentation.NewPresentation(userBusiness)
