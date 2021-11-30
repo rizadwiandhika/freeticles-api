@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions/presentation/request"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions/presentation/response"
 )
 
 type any interface{}
@@ -20,6 +21,24 @@ func NewPresentation(rb reactions.IBusiness) *ReactionPresentation {
 	return &ReactionPresentation{
 		reactionBusiness: rb,
 	}
+}
+
+func (rp *ReactionPresentation) GetArticleComments(c echo.Context) error {
+	var articleID uint
+	echo.PathParamsBinder(c).Uint("id", &articleID)
+
+	comments, err, status := rp.reactionBusiness.FindCommentsByArticleId(articleID)
+	if err != nil {
+		return c.JSON(status, json{
+			"message": "Failed getting comments",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(status, json{
+		"message":  "success fetching comments",
+		"comments": response.FromSliceCommentCore(comments),
+	})
 }
 
 func (rp *ReactionPresentation) PostLike(c echo.Context) error {
