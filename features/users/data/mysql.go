@@ -123,3 +123,7 @@ func (ur *userRepository) DeleteUser(username string) error {
 func (ur *userRepository) DeleteFollowing(following users.FollowerCore) error {
 	return ur.db.Where("user_id = ? AND follower_id = ?", following.UserID, following.FollowerID).Delete(&Follower{}).Error
 }
+
+func (ur *userRepository) DeleteAllUserFollow(userID uint) error {
+	return ur.db.Where("user_id = ? OR follower_id = ?", userID, userID).Delete(&Follower{}).Error
+}
