@@ -11,6 +11,7 @@ func Setup() *echo.Echo {
 
 	presenter := factory.New()
 	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(middleware.CORS())
 
 	SetupArticleRoutes(e, presenter)
 	SetupUserRoutes(e, presenter)
