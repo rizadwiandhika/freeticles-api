@@ -7,17 +7,20 @@ import (
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
+	images "github.com/rizadwiandhika/miniproject-backend-alterra/third-parties/image"
 )
 
 type reactionBusiness struct {
 	reactionData    reactions.IData
+	imageAnalyzer   images.IBusiness
 	userBusniess    users.IBusiness
 	articleBusiness articles.IBusiness
 }
 
-func NewBusiness(rd reactions.IData, ub users.IBusiness, ab articles.IBusiness) *reactionBusiness {
+func NewBusiness(rd reactions.IData, ia images.IBusiness, ub users.IBusiness, ab articles.IBusiness) *reactionBusiness {
 	return &reactionBusiness{
 		reactionData:    rd,
+		imageAnalyzer:   ia,
 		userBusniess:    ub,
 		articleBusiness: ab,
 	}
@@ -42,6 +45,7 @@ func (rb *reactionBusiness) FindCommentsByArticleId(articleId uint) ([]reactions
 	usersMap := make(map[uint]reactions.UserCore)
 	for _, user := range users {
 		usersMap[user.ID] = reactions.UserCore{
+			ID:       user.ID,
 			Username: user.Username,
 			Name:     user.Name,
 		}
@@ -53,6 +57,14 @@ func (rb *reactionBusiness) FindCommentsByArticleId(articleId uint) ([]reactions
 	}
 
 	return comments, nil, http.StatusOK
+}
+
+func (rp *reactionBusiness) CountTotalArticleLikes(articleId uint) (int, error) {
+	totalLikes, err := rp.reactionData.SelectCountLikes(articleId)
+	if err != nil {
+		return 0, err
+	}
+	return totalLikes, nil
 }
 
 func (rb *reactionBusiness) PostLike(username string, articleId uint) (error, int) {
@@ -152,12 +164,37 @@ func (rb *reactionBusiness) ReportArticle(username string, articleId uint, repor
 		return err, http.StatusInternalServerError
 	}
 
+	const SEXUAL_CONTENT_REPORT = 2
+	if reportTypeId == SEXUAL_CONTENT_REPORT {
+		go rb.followupNSFWReport(*article)
+	}
+
 	return nil, http.StatusCreated
 }
 
-func (rb *reactionBusiness) findUserAndArticle(username string, articleId uint) (*reactions.UserCore, *reactions.ArticleCore) {
-	userChannnel := make(chan *reactions.UserCore)
-	articleChannnel := make(chan *reactions.ArticleCore)
+func (rb *reactionBusiness) RemoveCommentsByArticleId(id uint) error {
+	return rb.reactionData.DeleteCommentsByArticleId(id)
+}
+func (rb *reactionBusiness) RemoveLikesByArticleId(id uint) error {
+	return rb.reactionData.DeleteLikesByArticleId(id)
+}
+func (rb *reactionBusiness) RemoveReportsByArticleId(id uint) error {
+	return rb.reactionData.DeleteReportsByArticleId(id)
+}
+
+func (rb *reactionBusiness) RemoveCommentsByUserId(id uint) error {
+	return rb.reactionData.DeleteCommentsByUserId(id)
+}
+func (rb *reactionBusiness) RemoveLikesByUserId(id uint) error {
+	return rb.reactionData.DeleteLikesByUserId(id)
+}
+func (rb *reactionBusiness) RemoveReportsByUserId(id uint) error {
+	return rb.reactionData.DeleteReportsByUserId(id)
+}
+
+func (rb *reactionBusiness) findUserAndArticle(username string, articleId uint) (*users.UserCore, *articles.ArticleCore) {
+	userChannnel := make(chan *users.UserCore)
+	articleChannnel := make(chan *articles.ArticleCore)
 
 	go func() {
 		user, err, _ := rb.userBusniess.FindUserByUsername(username)
@@ -165,11 +202,7 @@ func (rb *reactionBusiness) findUserAndArticle(username string, articleId uint) 
 			userChannnel <- nil
 			return
 		}
-		userChannnel <- &reactions.UserCore{
-			ID:       user.ID,
-			Username: user.Username,
-			Name:     user.Name,
-		}
+		userChannnel <- &user
 	}()
 
 	go func() {
@@ -178,14 +211,25 @@ func (rb *reactionBusiness) findUserAndArticle(username string, articleId uint) 
 			articleChannnel <- nil
 			return
 		}
-		articleChannnel <- &reactions.ArticleCore{
-			ID:    article.ID,
-			Title: article.Title,
-		}
+		articleChannnel <- &article
 	}()
 
 	user := <-userChannnel
 	article := <-articleChannnel
 
 	return user, article
+}
+
+func (rb *reactionBusiness) followupNSFWReport(article articles.ArticleCore) {
+	if article.Thumbnail == "" {
+		return
+	}
+
+	isNSFW, err := rb.imageAnalyzer.IsNSFW(article.Thumbnail)
+	if err != nil || !isNSFW {
+		return
+	}
+
+	article.Nsfw = true
+	_, _, _ = rb.articleBusiness.EditArticle(article)
 }
