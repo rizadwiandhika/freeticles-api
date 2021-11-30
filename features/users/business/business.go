@@ -4,18 +4,28 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/bookmarks"
+	"github.com/rizadwiandhika/miniproject-backend-alterra/features/reactions"
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/users"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userBusiness struct {
-	userData users.IData
+	userData         users.IData
+	articleBusiness  articles.IBusiness
+	reactionBusiness reactions.IBusiness
+	bookmarkBusiness bookmarks.IBusiness
 }
 
-func NewBusiness(data users.IData) *userBusiness {
+func NewBusiness(data users.IData, ab articles.IBusiness, rb reactions.IBusiness, bb bookmarks.IBusiness) *userBusiness {
 	return &userBusiness{
-		userData: data,
+		userData:         data,
+		articleBusiness:  ab,
+		reactionBusiness: rb,
+		bookmarkBusiness: bb,
 	}
 }
 
@@ -238,10 +248,42 @@ func (ub *userBusiness) RemoveUser(username string) (error, int) {
 		return errors.New("User not found"), http.StatusNotFound
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(4)
+
+	go func() {
+		_ = ub.bookmarkBusiness.DeleteBookmarksByUserId(existingUser.ID)
+		wg.Done()
+	}()
+	go func() {
+		_ = ub.reactionBusiness.RemoveCommentsByUserId(existingUser.ID)
+		wg.Done()
+	}()
+	go func() {
+		_ = ub.reactionBusiness.RemoveLikesByUserId(existingUser.ID)
+		wg.Done()
+	}()
+	go func() {
+		_ = ub.reactionBusiness.RemoveReportsByUserId(existingUser.ID)
+		wg.Done()
+	}()
+
+	wg.Wait()
+	err, _ = ub.articleBusiness.RemoveUserArticles(existingUser.ID)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
+	err = ub.userData.DeleteAllUserFollow(existingUser.ID)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
 	err = ub.userData.DeleteUser(username)
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
+
 	return nil, http.StatusNoContent
 }
 
