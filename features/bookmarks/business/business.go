@@ -84,3 +84,10 @@ func (bb *bookmarkBusiness) DeleteBookmark(username string, articleID uint) erro
 	}
 	return bb.bookmarkData.DeleteBookmark(bookmark)
 }
+
+func (bb *bookmarkBusiness) DeleteBookmarksByArticleId(articleID uint) error {
+	return bb.bookmarkData.DeleteBookmarksByArticleId(articleID)
+}
+func (bb *bookmarkBusiness) DeleteBookmarksByUserId(userID uint) error {
+	return bb.bookmarkData.DeleteBookmarksByUserId(userID)
+}
