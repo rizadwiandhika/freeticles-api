@@ -20,6 +20,8 @@ type IBusiness interface {
 	FindUserBookmarks(username string) ([]BookmarkCore, error)
 	CreateBookmark(username string, articleID uint) error
 	DeleteBookmark(username string, articleID uint) error
+	DeleteBookmarksByArticleId(articleID uint) error
+	DeleteBookmarksByUserId(userID uint) error
 }
 
 type IData interface {
@@ -27,4 +29,6 @@ type IData interface {
 	SelectUserBookmarks(userID uint) ([]BookmarkCore, error)
 	InsertBookmark(bookmark BookmarkCore) error
 	DeleteBookmark(bookmark BookmarkCore) error
+	DeleteBookmarksByArticleId(articleID uint) error
+	DeleteBookmarksByUserId(userID uint) error
 }
