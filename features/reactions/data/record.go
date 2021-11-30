@@ -51,6 +51,7 @@ func (c *Comment) toCommentCore() reactions.CommentCore {
 		ID:        c.ID,
 		UserID:    c.UserID,
 		ArticleID: c.ArticleID,
+		Commentar: c.Commentar,
 		CreatedAt: c.CreatedAt,
 	}
 }
