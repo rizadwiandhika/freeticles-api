@@ -13,7 +13,7 @@ type ArticleCore struct {
 	Thumbnail string
 	Nsfw      bool
 	Likes     int
-	Comments  []CommentCore
+
 	UpdatedAt time.Time
 	CreatedAt time.Time
 }
@@ -46,8 +46,10 @@ type QueryParams struct {
 type IBusiness interface {
 	FindArticles(params QueryParams) ([]ArticleCore, error, int)
 	FindArticleById(id uint) (ArticleCore, error, int)
+	FindTranslatedArticleById(id uint, lang string) (ArticleCore, error, int)
 	FindUserArticles(username string) ([]ArticleCore, error, int)
 	RemoveArticleById(id uint) (error, int)
+	RemoveUserArticles(userID uint) (error, int)
 	CreateArticle(article ArticleCore) (ArticleCore, error, int)
 	EditArticle(article ArticleCore) (ArticleCore, error, int)
 }
@@ -58,6 +60,9 @@ type IData interface {
 	SelectArticleById(id uint) (ArticleCore, error)
 	SelectArticlesByAuthorId(id uint) ([]ArticleCore, error)
 	DeleteArticleById(id uint) error
+	DeleteArticleTags(id uint) error
+	DeleteTagByArticleIds(id []uint) error
+	DeleteArticlesByUserId(userID uint) error
 	InsertArticle(article ArticleCore) (ArticleCore, error)
 	UpdateArticle(article ArticleCore) (ArticleCore, error)
 }
