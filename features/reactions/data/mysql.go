@@ -27,6 +27,12 @@ func (rr *reactionRepository) SelectLike(like reactions.LikeCore) (reactions.Lik
 	return fetchedLike.toLikeCore(), nil
 }
 
+func (rr *reactionRepository) SelectCountLikes(articleId uint) (int, error) {
+	var count int64
+	err := rr.db.Model(&Like{}).Where("article_id = ?", articleId).Count(&count).Error
+	return int(count), err
+}
+
 func (rr *reactionRepository) SelectCommentsByArticleId(articleId uint) ([]reactions.CommentCore, error) {
 	comments := SliceComment{}
 	err := rr.db.Where("article_id = ?", articleId).Find(&comments).Error
@@ -73,4 +79,24 @@ func (rr *reactionRepository) InsertReport(report reactions.ReportCore) error {
 
 func (rr *reactionRepository) DeleteLikeById(likeId uint) error {
 	return rr.db.Delete(&Like{}, likeId).Error
+}
+
+func (rr *reactionRepository) DeleteCommentsByArticleId(articleId uint) error {
+	return rr.db.Where("article_id = ?", articleId).Delete(&Comment{}).Error
+}
+func (rr *reactionRepository) DeleteLikesByArticleId(articleId uint) error {
+	return rr.db.Where("article_id = ?", articleId).Delete(&Like{}).Error
+}
+func (rr *reactionRepository) DeleteReportsByArticleId(articleId uint) error {
+	return rr.db.Where("article_id = ?", articleId).Delete(&Report{}).Error
+}
+
+func (rr *reactionRepository) DeleteCommentsByUserId(userId uint) error {
+	return rr.db.Where("user_id = ?", userId).Delete(&Comment{}).Error
+}
+func (rr *reactionRepository) DeleteLikesByUserId(userId uint) error {
+	return rr.db.Where("user_id = ?", userId).Delete(&Like{}).Error
+}
+func (rr *reactionRepository) DeleteReportsByUserId(userId uint) error {
+	return rr.db.Where("user_id = ?", userId).Delete(&Report{}).Error
 }
