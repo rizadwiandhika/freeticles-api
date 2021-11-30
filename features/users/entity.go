@@ -50,6 +50,7 @@ type IData interface {
 	UpdateUser(user UserCore) (UserCore, error)
 	DeleteUser(username string) error
 	DeleteFollowing(following FollowerCore) error
+	DeleteAllUserFollow(userID uint) error
 }
 
 func (u *UserCore) IsNotFound() bool {

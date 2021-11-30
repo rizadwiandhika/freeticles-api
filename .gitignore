@@ -70,6 +70,7 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,dotenv,go,git
 
+/thumbnails
 /ignores
 /x.go
 /*.js

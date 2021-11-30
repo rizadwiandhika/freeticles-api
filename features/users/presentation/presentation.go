@@ -114,7 +114,7 @@ func (up *UserPresentation) DeleteUser(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(status, json{"message": "Delete user success"})
+	return c.JSON(http.StatusOK, json{"message": "Delete user success"})
 }
 
 func (up *UserPresentation) GetUserFollowers(c echo.Context) error {
