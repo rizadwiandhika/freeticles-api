@@ -62,11 +62,38 @@ func (ar *articleRepository) SelectArticlesByAuthorId(id uint) ([]articles.Artic
 }
 
 func (ar *articleRepository) DeleteArticleById(id uint) error {
-	return ar.db.Delete(Article{}, id).Error
+	return ar.db.Delete(&Article{}, id).Error
+}
+
+func (ar *articleRepository) DeleteArticlesByUserId(userID uint) error {
+	return ar.db.Where("author_id = ?", userID).Delete(Article{}).Error
+}
+
+func (ar *articleRepository) DeleteArticleTags(id uint) error {
+	return ar.db.Where("article_id = ?", id).Delete(Tag{}).Error
+}
+
+func (ar *articleRepository) DeleteTagByArticleIds(id []uint) error {
+	return ar.db.Where("article_id IN (?)", id).Delete(Tag{}).Error
 }
 
 func (ar *articleRepository) InsertArticle(article articles.ArticleCore) (articles.ArticleCore, error) {
-	return articles.ArticleCore{}, nil
+	tags := make([]Tag, len(article.Tags))
+	for i, v := range article.Tags {
+		tags[i] = Tag{Tag: v.Tag}
+	}
+
+	newArticle := Article{
+		AuthorID:  article.AuthorID,
+		Title:     article.Title,
+		Subtitle:  article.Subtitle,
+		Content:   article.Content,
+		Thumbnail: article.Thumbnail,
+		Tags:      tags,
+	}
+
+	err := ar.db.Create(&newArticle).Error
+	return toArticleCore(&newArticle), err
 }
 
 func (ar *articleRepository) UpdateArticle(article articles.ArticleCore) (articles.ArticleCore, error) {
@@ -85,6 +112,7 @@ func (ar *articleRepository) UpdateArticle(article articles.ArticleCore) (articl
 		Thumbnail: article.Thumbnail,
 		Nsfw:      article.Nsfw,
 		Tags:      updatedTags,
+		CreatedAt: article.CreatedAt,
 	}
 
 	err := ar.db.Where("article_id = ?", article.ID).Delete(Tag{}).Error
