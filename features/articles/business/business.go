@@ -76,6 +76,12 @@ func (ab *articleBusiness) FindArticleById(id uint) (articles.ArticleCore, error
 		return articles.ArticleCore{}, err, http.StatusInternalServerError
 	}
 
+	totalLikes, err := ab.reactionBusiness.CountTotalArticleLikes(articleData.ID)
+	if err != nil {
+		return articles.ArticleCore{}, err, http.StatusInternalServerError
+	}
+
+	articleData.Likes = totalLikes
 	articleData.Author.Username = userData.Username
 	articleData.Author.Email = userData.Email
 	articleData.Author.Name = userData.Name
@@ -132,6 +138,14 @@ func (ab *articleBusiness) FindUserArticles(username string) ([]articles.Article
 	userArticles, err := ab.articleData.SelectArticlesByAuthorId(user.ID)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
+	}
+
+	for i := range userArticles {
+		totalLikes, err := ab.reactionBusiness.CountTotalArticleLikes(userArticles[i].ID)
+		if err != nil {
+			return nil, err, http.StatusInternalServerError
+		}
+		userArticles[i].Likes = totalLikes
 	}
 
 	return userArticles, nil, http.StatusOK
