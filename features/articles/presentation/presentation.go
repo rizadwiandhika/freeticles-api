@@ -61,7 +61,7 @@ func (ap *ArticlePresentation) GetUserArticles(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, json{"articles": response.FromSliceArticleCore(articles)})
+	return c.JSON(http.StatusOK, json{"articles": response.ToSliceUserArticles(articles)})
 }
 
 func (ap *ArticlePresentation) GetDetailArticle(c echo.Context) error {
