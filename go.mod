@@ -3,6 +3,7 @@ module github.com/rizadwiandhika/miniproject-backend-alterra
 go 1.16
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/spf13/viper v1.9.0
