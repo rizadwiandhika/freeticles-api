@@ -6,6 +6,20 @@ import (
 	"github.com/rizadwiandhika/miniproject-backend-alterra/features/articles"
 )
 
+type UserArticle struct {
+	ID        uint      `json:"id"`
+	AuthorID  uint      `json:"authorId"`
+	Tags      []string  `json:"tags"`
+	Title     string    `json:"title"`
+	Subtitle  string    `json:"subtitle"`
+	Content   string    `json:"content"`
+	Likes     int       `json:"likes"`
+	Thumbnail string    `json:"thumbnail"`
+	Nsfw      bool      `json:"nsfw"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type ModifiedArticle struct {
 	ID        uint      `json:"id"`
 	AuthorID  uint      `json:"authorId"`
@@ -49,6 +63,27 @@ type Comment struct {
 	Comment   string    `json:"comment"`
 	CreatedAt time.Time `json:"createdAt"`
 	User      User      `json:"user"`
+}
+
+func ToUserArticle(a *articles.ArticleCore) UserArticle {
+	tags := make([]string, len(a.Tags))
+	for i, tag := range a.Tags {
+		tags[i] = tag.Tag
+	}
+
+	return UserArticle{
+		ID:        a.ID,
+		AuthorID:  a.AuthorID,
+		Likes:     a.Likes,
+		Tags:      tags,
+		Title:     a.Title,
+		Subtitle:  a.Subtitle,
+		Content:   a.Content,
+		Thumbnail: a.Thumbnail,
+		Nsfw:      a.Nsfw,
+		UpdatedAt: a.UpdatedAt,
+		CreatedAt: a.CreatedAt,
+	}
 }
 
 func FromArticleCore(a *articles.ArticleCore) Article {
@@ -120,6 +155,14 @@ func FromSliceArticleCore(a []articles.ArticleCore) []Article {
 	articles := make([]Article, len(a))
 	for i, v := range a {
 		articles[i] = FromArticleCore(&v)
+	}
+	return articles
+}
+
+func ToSliceUserArticles(a []articles.ArticleCore) []UserArticle {
+	articles := make([]UserArticle, len(a))
+	for i, v := range a {
+		articles[i] = ToUserArticle(&v)
 	}
 	return articles
 }
