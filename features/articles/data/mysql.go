@@ -53,7 +53,7 @@ func (ar *articleRepository) SelectArticleById(id uint) (articles.ArticleCore, e
 
 func (ar *articleRepository) SelectArticlesByAuthorId(id uint) ([]articles.ArticleCore, error) {
 	articles := []Article{}
-	err := ar.db.Where("author_id = ?", id).Find(&articles).Error
+	err := ar.db.Preload("Tags").Where("author_id = ?", id).Find(&articles).Error
 	if err != nil {
 		return nil, err
 	}
