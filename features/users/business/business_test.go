@@ -42,6 +42,7 @@ func TestMain(m *testing.M) {
 		Email:    "riza@mail.com",
 		Name:     "Riza Dwi Andhika",
 		Role:     "admin",
+		Password: "riza123",
 	}
 	hernowo = users.UserCore{
 		ID:       2,
@@ -324,4 +325,247 @@ func TestFindUserByEmail(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, http.StatusNotFound, status)
 	})
+}
+
+func TestCreateUser(t *testing.T) {
+	t.Run("valid - create user", func(t *testing.T) {
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+		userData.On("InsertUser", mock.Anything).Return(riza, nil).Once()
+
+		user, err, status := userBusiness.CreateUser(riza)
+
+		assert.Equal(t, user.ID, riza.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername failed", func(t *testing.T) {
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, errors.New("qwe")).Once()
+
+		_, err, status := userBusiness.CreateUser(riza)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when user already existed", func(t *testing.T) {
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		_, err, status := userBusiness.CreateUser(riza)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusConflict, status)
+	})
+
+	t.Run("valid - when insert failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+		userData.On("InsertUser", mock.Anything).Return(riza, errors.New("err")).Once()
+
+		user, err, status := userBusiness.CreateUser(riza)
+
+		assert.Equal(t, user.Username, riza.Username)
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+}
+
+func TestCreateFollower(t *testing.T) {
+	t.Run("valid - create follower", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(jamie, nil).Once()
+
+		userData.On("InsertFollower", mock.Anything).Return(nil).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, errors.New("err")).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when user not found", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername (follower) failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, errors.New("asd")).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername (follower) failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, status)
+	})
+
+	t.Run("valid - create follower", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(jamie, nil).Once()
+
+		userData.On("InsertFollower", mock.Anything).Return(errors.New("err")).Once()
+
+		err, status := userBusiness.CreateFollower(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+}
+
+func TestEditUser(t *testing.T) {
+	t.Run("valid - edit user", func(t *testing.T) {
+		updatedUser := users.UserCore{
+			ID:       riza.ID,
+			Username: riza.Username,
+			Email:    riza.Email,
+			Password: riza.Password,
+			Name:     "riza aja",
+		}
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("UpdateUser", mock.Anything).Return(updatedUser, nil).Once()
+
+		result, err, status := userBusiness.EditUser(updatedUser)
+
+		assert.Equal(t, result.ID, riza.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, errors.New("123")).Once()
+
+		_, err, status := userBusiness.EditUser(users.UserCore{
+			ID:       riza.ID,
+			Username: riza.Username,
+			Name:     riza.Name,
+		})
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when user not found", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+
+		_, err, status := userBusiness.EditUser(riza)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, status)
+	})
+
+	t.Run("valid - edit user", func(t *testing.T) {
+		updatedUser := users.UserCore{
+			ID:       riza.ID,
+			Username: riza.Username,
+			Email:    riza.Email,
+			Password: riza.Password,
+			Name:     "riza aja",
+		}
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("UpdateUser", mock.Anything).Return(users.UserCore{}, errors.New("asd")).Once()
+
+		_, err, status := userBusiness.EditUser(updatedUser)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+}
+
+func TestRemoveFollowing(t *testing.T) {
+	t.Run("valid - remove following", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(jamie, nil).Once()
+
+		userData.On("DeleteFollowing", mock.Anything).Return(nil).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, status)
+	})
+
+	t.Run("valid - when SelectUserByUsername failed", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, errors.New("err")).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when user not found", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, status)
+	})
+
+	t.Run("valid - remove following", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, errors.New("err")).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - remove following", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(users.UserCore{}, nil).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, status)
+	})
+
+	t.Run("valid - remove following", func(t *testing.T) {
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(riza, nil).Once()
+
+		userData.On("SelectUserByUsername", mock.AnythingOfType("string")).Return(jamie, nil).Once()
+
+		userData.On("DeleteFollowing", mock.Anything).Return(errors.New("err")).Once()
+
+		err, status := userBusiness.RemoveFollowing(riza.Username, jamie.Username)
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
 }
