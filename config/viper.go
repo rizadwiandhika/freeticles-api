@@ -10,12 +10,12 @@ import (
 type Env struct {
 	JWT_SECRET           string `mapstructure:"JWT_SECRET"`
 	CLOUDMERSIVE_API_KEY string `mapstructure:"CLOUDMERSIVE_API_KEY"`
-	PORT                 string `mapstructure:"PORT"`
 	DB_NAME              string `mapstructure:"DB_NAME"`
 	DB_USERNAME          string `mapstructure:"DB_USERNAME"`
 	DB_PASSWORD          string `mapstructure:"DB_PASSWORD"`
 	DB_HOST              string `mapstructure:"DB_HOST"`
 	DB_PORT              string `mapstructure:"DB_PORT"`
+	PORT                 string
 }
 
 var ENV Env
@@ -33,6 +33,7 @@ func LoadEnv() {
 		panic(err)
 	}
 
+	ENV.PORT = os.Getenv("PORT")
 	if ENV.PORT == "" {
 		ENV.PORT = "8080"
 	}
