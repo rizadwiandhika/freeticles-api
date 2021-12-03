@@ -22,15 +22,11 @@ var ENV Env
 var WORKING_DIR string
 
 func LoadEnv() {
-	envFile := filepath.Join(".env")
-	viper.SetConfigFile(envFile)
-
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-
-	if err := viper.Unmarshal(&ENV); err != nil {
-		panic(err)
+	if err := tryLoadFromENVFile(); err != nil {
+		tryLoadFromOSENV()
+		if ENV.JWT_SECRET == "" {
+			panic("JWT_SECRET is not set, Failed to load ENV file or OS ENV")
+		}
 	}
 
 	ENV.PORT = os.Getenv("PORT")
@@ -43,4 +39,29 @@ func LoadEnv() {
 		panic(err)
 	}
 	WORKING_DIR = pwd
+}
+
+func tryLoadFromENVFile() error {
+	envFile := filepath.Join(".env")
+	viper.SetConfigFile(envFile)
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	if err := viper.Unmarshal(&ENV); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func tryLoadFromOSENV() {
+	ENV.JWT_SECRET = os.Getenv("JWT_SECRET")
+	ENV.CLOUDMERSIVE_API_KEY = os.Getenv("CLOUDMERSIVE_API_KEY")
+	ENV.DB_NAME = os.Getenv("DB_NAME")
+	ENV.DB_USERNAME = os.Getenv("DB_USERNAME")
+	ENV.DB_PASSWORD = os.Getenv("DB_PASSWORD")
+	ENV.DB_HOST = os.Getenv("DB_HOST")
+	ENV.DB_PORT = os.Getenv("DB_PORT")
 }
