@@ -131,6 +131,8 @@ func TestFindArticleById(t *testing.T) {
 		articleData.On("SelectArticleById", mock.AnythingOfType("uint")).Return(articleValue, nil).Once()
 		userBusiness.On("FindUserById", mock.AnythingOfType("uint")).Return(userValue, nil, 200).Once()
 
+		reactionBusiness.On("CountTotalArticleLikes", mock.AnythingOfType("uint")).Return(1, nil).Once()
+
 		data, _, _ := articleBusiness.FindArticleById(1)
 
 		assert.Equal(t, articleValue.ID, data.ID)
@@ -155,6 +157,17 @@ func TestFindArticleById(t *testing.T) {
 	t.Run("valid - error when FindUserById failed", func(t *testing.T) {
 		articleData.On("SelectArticleById", mock.AnythingOfType("uint")).Return(articleValue, nil).Once()
 		userBusiness.On("FindUserById", mock.AnythingOfType("uint")).Return(users.UserCore{}, errors.New("error"), 500).Once()
+
+		_, err, _ := articleBusiness.FindArticleById(1)
+
+		assert.NotNil(t, err)
+	})
+
+	t.Run("valid - find detail article", func(t *testing.T) {
+		articleData.On("SelectArticleById", mock.AnythingOfType("uint")).Return(articleValue, nil).Once()
+		userBusiness.On("FindUserById", mock.AnythingOfType("uint")).Return(userValue, nil, 200).Once()
+
+		reactionBusiness.On("CountTotalArticleLikes", mock.AnythingOfType("uint")).Return(0, errors.New("abc")).Once()
 
 		_, err, _ := articleBusiness.FindArticleById(1)
 
@@ -291,6 +304,8 @@ func TestFindUserArticles(t *testing.T) {
 		mc = mc.Return([]articles.ArticleCore{articleValue}, nil)
 		mc.Once()
 
+		reactionBusiness.On("CountTotalArticleLikes", mock.AnythingOfType("uint")).Return(1, nil).Once()
+
 		userArticles, _, _ := articleBusiness.FindUserArticles("riza.dwii")
 
 		assert.Equal(t, 1, len(userArticles))
@@ -309,7 +324,7 @@ func TestFindUserArticles(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, status)
 	})
 
-	t.Run("valid - FindUserArticles", func(t *testing.T) {
+	t.Run("valid - when failed SelectArticlesByAuthorId", func(t *testing.T) {
 		var mc *mock.Call
 
 		mc = userBusiness.On("FindUserByUsername", mock.AnythingOfType("string"))
@@ -321,6 +336,25 @@ func TestFindUserArticles(t *testing.T) {
 		mc.Once()
 
 		_, err, status := articleBusiness.FindUserArticles("owo")
+
+		assert.NotNil(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
+	})
+
+	t.Run("valid - when CountTotalArticleLikes failed", func(t *testing.T) {
+		var mc *mock.Call
+
+		mc = userBusiness.On("FindUserByUsername", mock.AnythingOfType("string"))
+		mc = mc.Return(userValue, nil, 200)
+		mc.Once()
+
+		mc = articleData.On("SelectArticlesByAuthorId", mock.AnythingOfType("uint"))
+		mc = mc.Return([]articles.ArticleCore{articleValue}, nil)
+		mc.Once()
+
+		reactionBusiness.On("CountTotalArticleLikes", mock.AnythingOfType("uint")).Return(0, errors.New("err")).Once()
+
+		_, err, status := articleBusiness.FindUserArticles("riza.dwii")
 
 		assert.NotNil(t, err)
 		assert.Equal(t, http.StatusInternalServerError, status)
@@ -438,8 +472,8 @@ func TestRemoveUserArticles(t *testing.T) {
 
 		err, status := articleBusiness.RemoveUserArticles(1)
 
-		assert.Nil(t, err)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
 	})
 
 	t.Run("valid - error when DeleteArticlesByUserId", func(t *testing.T) {
@@ -459,8 +493,8 @@ func TestRemoveUserArticles(t *testing.T) {
 
 		err, status := articleBusiness.RemoveUserArticles(1)
 
-		assert.Nil(t, err)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, status)
 	})
 }
 
