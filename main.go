@@ -14,5 +14,5 @@ func main() {
 	migration.AutoMigrate()
 
 	e := routes.Setup()
-	log.Fatalln(e.Start(":8080"))
+	log.Fatalln(e.Start(":" + config.ENV.PORT))
 }
